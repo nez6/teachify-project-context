@@ -1,0 +1,56 @@
+:root {
+  color-scheme: light;
+  --paper: #f7f4ea;
+  --card: #fffdf6;
+  --ink: #1b2430;
+  --muted: #5d6673;
+  --line: #d9d3c1;
+  --grid: #e7e2d2;
+  --pen: #c9321f;
+  --pen-soft: #fbe6df;
+  --high: #ffe45c;
+  --go: #0f7a5a;
+  --go-soft: #dcf2e8;
+  --blue: #2257c7;
+  --blue-soft: #e2eafb;
+  --amber: #b76a00;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --serif: Charter, "Iowan Old Style", Georgia, serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: var(--ink);
+  font: 15px/1.45 var(--sans);
+}
+button { font: inherit; cursor: pointer; }
+button:focus-visible, textarea:focus-visible, a:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+h1, h2, h3, p { margin: 0; }
+.brand { font: 700 22px/1 var(--serif); letter-spacing: -0.01em; }
+.brand i { color: var(--pen); font-style: italic; }
+.btn {
+  border: 1.5px solid var(--ink); background: var(--card); color: var(--ink);
+  border-radius: 8px; padding: 7px 12px; font-weight: 600;
+}
+.btn:hover { background: var(--high); }
+.btn.primary { background: var(--ink); color: #fff; }
+.btn.primary:hover { background: #33414f; }
+.btn.quiet { border-color: var(--line); font-weight: 500; color: var(--muted); }
+.btn.quiet:hover { background: var(--card); color: var(--ink); border-color: var(--ink); }
+.work { font: 15px/1.5 var(--mono); }
+.work div { padding: 2px 8px; border-radius: 4px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.work .n { color: var(--muted); display: inline-block; width: 1.6em; user-select: none; }
+.work .error {
+  color: var(--pen); font-weight: 700;
+  text-decoration: underline wavy var(--pen) 1.5px; text-underline-offset: 4px;
+  background: var(--pen-soft);
+}
+.work .after_error, .work .unread { color: var(--muted); }
+.work .ok::after { content: " ✓"; color: var(--go); }
+.work .unread::after { content: "  (couldn't read)"; font: italic 12px var(--sans); }

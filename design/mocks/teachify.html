@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Teachify friendly tutor mock</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    :root{--ink:#17324d;--paper:#fff9ef;--ochre:#d38b32;--moss:#3e6b57;--clay:#b8533e;--mist:#e9eff0;--line:rgba(23,50,77,.18)}
+    *{box-sizing:border-box} body{margin:0;color:var(--ink);background:var(--paper);font:16px/1.55 Manrope,sans-serif;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:32px 32px}
+    button,a{font:inherit} button{min-height:44px} .shell{max-width:1440px;margin:auto;min-height:100vh;background:rgba(255,249,239,.92)}
+    header{display:flex;align-items:center;justify-content:space-between;padding:22px 32px;border-bottom:1px solid var(--line);background:var(--paper);position:sticky;top:0;z-index:4}.brand{font:700 28px/1 Fraunces,serif}.brand i{color:var(--ochre);font-style:normal}.nav{display:flex;gap:8px}.nav a{color:var(--ink);text-decoration:none;padding:10px 14px;border-radius:8px}.nav a.active{background:var(--ink);color:white}
+    main{padding:32px;display:grid;grid-template-columns:minmax(0,2fr) minmax(320px,1fr);gap:24px}.eyebrow{color:var(--clay);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}.workspace,.companion,.worksheet{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 50px rgba(23,50,77,.1)}.workspace{padding:28px}.companion{display:flex;flex-direction:column;overflow:hidden}.companion header{position:static;padding:20px;border-bottom:1px solid var(--line)}
+    h1,h2,h3{font-family:Fraunces,serif;line-height:1.05;margin:0}h1{font-size:48px;max-width:760px}h2{font-size:30px}.sub{color:#526575;max-width:680px;margin:12px 0 28px}.problem{padding:20px;border-radius:12px;background:var(--paper);border:1px solid var(--line);margin-bottom:18px}.equation{font-size:30px;font-weight:700;margin-top:6px}.label{font-size:13px;font-weight:700;margin:14px 0 6px}.work{width:100%;min-height:180px;border:1px solid var(--line);border-radius:8px;padding:16px;font:600 18px/1.6 Manrope;background:#fff;color:var(--ink)}
+    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}.primary,.secondary,.voice{border:1px solid var(--ink);border-radius:8px;padding:10px 16px;font-weight:700}.primary{background:var(--ink);color:#fff}.secondary{background:#fff;color:var(--ink)}.voice{background:var(--ochre);border-color:var(--ochre);color:#172a3a;display:flex;align-items:center;gap:8px}.voice.listening{background:var(--clay);border-color:var(--clay);color:#fff}.status{display:flex;align-items:center;gap:8px;color:var(--moss);font-size:13px;font-weight:700;margin-top:16px}.dot{width:9px;height:9px;border-radius:50%;background:currentColor}
+    .chat{padding:20px;display:flex;flex-direction:column;gap:14px;min-height:460px}.bubble{padding:14px 16px;border-radius:14px;max-width:92%}.tutor{background:var(--mist);align-self:flex-start;border-bottom-left-radius:4px}.student{background:var(--ink);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}.hint{border-left:4px solid var(--ochre);background:#fff6df}.companion footer{margin-top:auto;padding:16px 20px;border-top:1px solid var(--line);font-size:13px;color:#526575}
+    .wide{grid-column:1/-1}.worksheet{padding:28px}.worksheet-head{display:flex;justify-content:space-between;gap:20px;align-items:end}.print-actions{display:flex;gap:10px}.pages{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:22px}.page{aspect-ratio:8.5/11;background:white;border:1px solid var(--line);padding:26px;box-shadow:0 12px 30px rgba(23,50,77,.08)}.page-top{display:flex;justify-content:space-between;border-bottom:4px solid var(--ochre);padding-bottom:12px}.mini-brand{font:700 22px Fraunces}.tag{font-size:8px;color:#526575}.page h3{font-size:18px;text-align:right}.fields{display:grid;grid-template-columns:2fr 1fr;gap:18px;font-size:9px;margin:14px 0}.field{border-bottom:1px solid var(--ink);padding-bottom:4px}.qs{counter-reset:q;display:grid;gap:12px}.q{counter-increment:q;font-size:10px;padding-left:26px;position:relative}.q:before{content:counter(q);position:absolute;left:0;color:var(--ochre);font-weight:700}.answer{height:18px;border-bottom:1px solid var(--line)}
+    .mobile-note{display:none}.focus-demo:focus{outline:3px solid var(--ochre);outline-offset:3px}
+    @media(max-width:800px){header{padding:16px}.nav a:not(.active){display:none}main{padding:16px;grid-template-columns:1fr}.workspace,.worksheet{padding:20px}h1{font-size:38px}.companion{min-height:520px}.wide{grid-column:1}.pages{grid-template-columns:1fr}.page:nth-child(2){display:none}.worksheet-head{align-items:start;flex-direction:column}.print-actions{width:100%;flex-direction:column}.print-actions button{width:100%}.mobile-note{display:block;color:#526575;font-size:13px}.actions{position:sticky;bottom:0;background:#fff;padding:10px 0}.voice{flex:1}.primary{flex:1}}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="brand">Teach<i>ify</i></div>
+    <nav class="nav" aria-label="Primary"><a class="active" href="#tutor">Tutor</a><a href="#teacher">Teacher</a><a href="#worksheets">Worksheets</a><a href="#pricing">Plans</a></nav>
+  </header>
+  <main>
+    <section class="workspace" id="tutor">
+      <div class="eyebrow">Maya's tutor · Demo mode</div>
+      <h1>Let’s find the first step that changed the math.</h1>
+      <p class="sub">Write each step on a new line, take a photo, or talk it through. Teachify will point to the first place to revisit without giving away the answer.</p>
+      <div class="problem"><div class="eyebrow">Algebra 1 · Solve for x</div><div class="equation">3(x + 2) = 2x + 11</div></div>
+      <div class="label">Your work, one step per line</div>
+      <textarea class="work focus-demo">3x + 2 = 2x + 11
+x + 2 = 11
+x = 9</textarea>
+      <div class="actions"><button class="voice"><i class="ph ph-microphone"></i> Talk it through</button><button class="secondary"><i class="ph ph-camera"></i> Add a photo</button><button class="primary">Check my steps</button></div>
+      <div class="status"><span class="dot"></span> Math checking is ready. Voice is available when configured.</div>
+    </section>
+    <aside class="companion">
+      <header><div><div class="eyebrow">Your Teachify guide</div><h2>One question at a time</h2></div></header>
+      <div class="chat"><div class="bubble tutor">I found one step to revisit. Before we change anything, what should the 3 multiply inside the parentheses?</div><div class="bubble student">Both x and 2?</div><div class="bubble hint"><strong>Exactly.</strong> Try rewriting only the first line with the 3 multiplied by both terms. I’ll check from there.</div><button class="voice listening"><i class="ph ph-waveform"></i> Listening · tap to stop</button></div>
+      <footer><i class="ph ph-shield-check"></i> SymPy checks the math. The language model only helps phrase the hint.</footer>
+    </aside>
+    <section class="worksheet wide" id="worksheets">
+      <div class="worksheet-head"><div><div class="eyebrow">Judge handouts</div><h2>Two ready-to-print practice sheets</h2><p class="sub">Print both for the table, or choose one for a quick demo.</p></div><div class="print-actions"><button class="secondary"><i class="ph ph-printer"></i> Print arithmetic</button><button class="primary"><i class="ph ph-files"></i> Print both</button></div></div>
+      <p class="mobile-note">Mobile preview shows the first sheet. Print both includes the fractions page.</p>
+      <div class="pages">
+        <article class="page"><div class="page-top"><div><div class="mini-brand">Teachify</div><div class="tag">Helping you maintain your classroom one step at a time</div></div><h3>Arithmetic &amp;<br>Number Sense</h3></div><div class="fields"><div class="field">Student name</div><div class="field">Date</div></div><div class="qs"><div class="q">47 + 28 =<div class="answer"></div></div><div class="q">93 - 56 =<div class="answer"></div></div><div class="q">8 × 7 =<div class="answer"></div></div><div class="q">144 / 12 =<div class="answer"></div></div><div class="q">Round 683 to the nearest hundred.<div class="answer"></div></div><div class="q">Share 36 markers equally among 4 tables.<div class="answer"></div></div></div></article>
+        <article class="page"><div class="page-top"><div><div class="mini-brand">Teachify</div><div class="tag">Helping you maintain your classroom one step at a time</div></div><h3>Fractions &amp;<br>Pre-Algebra</h3></div><div class="fields"><div class="field">Student name</div><div class="field">Date</div></div><div class="qs"><div class="q">3/4 = ___/12<div class="answer"></div></div><div class="q">Simplify 18/24.<div class="answer"></div></div><div class="q">1/3 + 1/6 =<div class="answer"></div></div><div class="q">2 1/4 - 3/4 =<div class="answer"></div></div><div class="q">Solve 4x + 7 = 31.<div class="answer"></div></div><div class="q">Write and solve: x + 6 = 18.<div class="answer"></div></div></div></article>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>

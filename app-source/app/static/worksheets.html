@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teachify Worksheets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#17324d;--paper:#fff9ef;--ochre:#d38b32;--muted:#526575;--line:#d8e0e3}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.45 Manrope,sans-serif}button,a{font:inherit}.site-head{display:flex;align-items:center;justify-content:space-between;max-width:1200px;margin:auto;padding:20px 24px}.brand{font:700 28px Fraunces,serif}.brand i{color:var(--ochre);font-style:normal}.back{color:var(--ink);text-decoration:none;font-weight:700}.intro{max-width:1200px;margin:auto;padding:24px}.eyebrow{color:#9a4d3f;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}h1{font:700 48px/1.02 Fraunces,serif;margin:8px 0}.sub{color:var(--muted);max-width:680px}.actions{display:flex;gap:10px;margin:24px 0}.btn{min-height:44px;border:1px solid var(--ink);border-radius:8px;padding:10px 16px;background:white;color:var(--ink);font-weight:700}.btn.primary{background:var(--ink);color:white}.pages{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:1200px;margin:0 auto 48px;padding:0 24px}.sheet{background:white;aspect-ratio:8.5/11;padding:7%;border:1px solid var(--line);box-shadow:0 18px 50px rgba(23,50,77,.1)}.sheet-head{display:flex;justify-content:space-between;gap:18px;padding-bottom:14px;border-bottom:4px solid var(--ochre)}.sheet h2{font:700 24px/1.05 Fraunces,serif;text-align:right;margin:0}.tag{font-size:9px;color:var(--muted)}.fields{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin:16px 0;font-size:11px}.field{border-bottom:1px solid var(--ink);padding-bottom:4px}.questions{counter-reset:q;display:grid;gap:18px}.question{counter-increment:q;padding-left:32px;position:relative;font-size:13px;font-weight:600}.question:before{content:counter(q);position:absolute;left:0;color:var(--ochre);font-weight:700}.answer{height:28px;border-bottom:1px solid var(--line)}.footer{font-size:9px;color:var(--muted);text-align:center;margin-top:24px}
+@media(max-width:760px){h1{font-size:38px}.actions{flex-direction:column}.pages{grid-template-columns:1fr}.sheet{padding:6%}}
+@page{size:Letter portrait;margin:.45in}@media print{body{background:white}.site-head,.intro{display:none}.pages{display:block;margin:0;padding:0}.sheet{width:7.6in;height:10.1in;aspect-ratio:auto;border:0;box-shadow:none;padding:.2in}.sheet:not(:last-child){break-after:page}.sheet.print-hidden{display:none}}
+</style>
+</head>
+<body>
+<header class="site-head"><div class="brand">Teach<i>ify</i></div><a class="back" href="/">Back to the demo</a></header>
+<main>
+<section class="intro"><div class="eyebrow">Judge handouts</div><h1>Two practice sheets, ready for the table.</h1><p class="sub">Print both for the full Teachify demo, or choose one for a quicker walkthrough. Each page is original and leaves room to show work.</p><div class="actions"><button class="btn" data-print="0">Print arithmetic</button><button class="btn" data-print="1">Print fractions</button><button class="btn primary" data-print="all">Print both</button></div></section>
+<section class="pages" aria-label="Worksheet previews">
+<article class="sheet" data-sheet="0"><div class="sheet-head"><div><div class="brand">Teach<i>ify</i></div><div class="tag">Helping you maintain your classroom one step at a time</div></div><h2>Arithmetic &amp;<br>Number Sense</h2></div><div class="fields"><div class="field">Student name</div><div class="field">Date</div></div><div class="questions"><div class="question">47 + 28 =<div class="answer"></div></div><div class="question">93 - 56 =<div class="answer"></div></div><div class="question">8 × 7 =<div class="answer"></div></div><div class="question">144 / 12 =<div class="answer"></div></div><div class="question">Round 683 to the nearest hundred.<div class="answer"></div></div><div class="question">Maya shares 36 markers equally among 4 tables. How many markers does each table get?<div class="answer"></div><div class="answer"></div></div></div><div class="footer">Teachify demo worksheet · Original practice set</div></article>
+<article class="sheet" data-sheet="1"><div class="sheet-head"><div><div class="brand">Teach<i>ify</i></div><div class="tag">Helping you maintain your classroom one step at a time</div></div><h2>Fractions &amp;<br>Pre-Algebra</h2></div><div class="fields"><div class="field">Student name</div><div class="field">Date</div></div><div class="questions"><div class="question">3/4 = ___/12<div class="answer"></div></div><div class="question">Simplify 18/24.<div class="answer"></div></div><div class="question">1/3 + 1/6 =<div class="answer"></div></div><div class="question">2 1/4 - 3/4 =<div class="answer"></div></div><div class="question">Solve: 4x + 7 = 31<div class="answer"></div></div><div class="question">A box holds x pencils. After 6 more are added, there are 18. Write an equation and solve for x.<div class="answer"></div><div class="answer"></div></div></div><div class="footer">Teachify demo worksheet · Original practice set</div></article>
+</section>
+</main>
+<script>
+const sheets=[...document.querySelectorAll('[data-sheet]')];
+document.querySelectorAll('[data-print]').forEach(button=>button.addEventListener('click',()=>{
+  const target=button.dataset.print;
+  sheets.forEach(sheet=>sheet.classList.toggle('print-hidden',target!=='all'&&sheet.dataset.sheet!==target));
+  window.print();
+  sheets.forEach(sheet=>sheet.classList.remove('print-hidden'));
+}));
+</script>
+</body>
+</html>
