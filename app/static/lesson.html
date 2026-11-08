@@ -46,6 +46,7 @@
   .choice.say { background: var(--tomato); display: inline-flex; gap: 8px; align-items: center; }
   .choice.say.on { background: var(--high); }
   .choice.wrong { animation: shake .4s; }
+  .choice.picked, .paper button.picked { background: var(--high); outline: 4px solid var(--ink); outline-offset: 3px; transform: scale(1.06); transition: transform .2s; }
   @keyframes shake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
 
   .paper { width: min(520px, 100%); background: #fffdf8; border: 2.5px solid var(--ink); border-radius: 6px; padding: 18px 22px 18px 54px; box-shadow: 6px 6px 0 var(--ink); position: relative; background-image: linear-gradient(transparent 47px, #cfe0f5 48px); background-size: 100% 48px; transform: rotate(-1.2deg); animation: eq-in .5s both; }
@@ -93,6 +94,7 @@
         <li><i data-lucide="sparkles"></i>Ages 7 to 12, no math needed to start</li>
       </ul>
       <button class="play" id="play"><i data-lucide="play"></i>Start the mystery</button>
+      <p class="autonote" id="autonote" hidden>Demo mode: a pretend detective answers by itself.</p>
     </div>
     <div id="coverPip"></div>
   </div>
@@ -147,6 +149,15 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 const voice = new Audio(); speakWith(pip, voice);
 let paused = false, started = 0, pausedAt = 0, pausedTotal = 0;
 const FAST = new URLSearchParams(location.search).has("fast");  // QA: skips narration
+// Demo mode: a pretend kid answers, including a few wrong tries so Pip's catch shows.
+const AUTO = new URLSearchParams(location.search).has("auto");
+const AUTO_ANSWERS = [1, "right", 3, "one", "both", "box", "left", "both", 4, 3, "PAPER2", "PAPER1", "both"];
+async function autoPick(find) {
+  await sleep(1400);
+  const btn = find(AUTO_ANSWERS.shift());
+  if (!btn) return;
+  btn.classList.add("picked"); await sleep(700); btn.click();
+}
 async function line(name) {
   const text = LINES[name];
   $("caption").textContent = text;
@@ -253,6 +264,7 @@ function choose(options) {
     });
     lucide.createIcons();
     pip.look(0, 1);
+    if (AUTO) autoPick((v) => [...$("choices").children][options.findIndex(o => o.value === v)]);
   });
 }
 function clearChoices() { $("choices").innerHTML = ""; }
@@ -414,7 +426,10 @@ async function lesson() {
     <button data-i="0">2x + 1 = 7</button><button data-i="1">2x = 8</button><button data-i="2">x = 4</button></div>`;
   await line("spot1");
   for (;;) {
-    const i = await new Promise((resolve) => $("math").querySelectorAll(".paper button").forEach(b => b.onclick = () => resolve(+b.dataset.i)));
+    const i = await new Promise((resolve) => {
+      $("math").querySelectorAll(".paper button").forEach(b => b.onclick = () => resolve(+b.dataset.i));
+      if (AUTO) autoPick((v) => $("math").querySelector(`[data-i="${String(v).slice(5)}"]`));
+    });
     const btn = $("math").querySelector(`[data-i="${i}"]`);
     if (i === 1) {
       btn.insertAdjacentHTML("beforeend", '<svg class="ring" viewBox="0 0 300 52" preserveAspectRatio="none"><path d="M12 28 C 40 2, 260 0, 290 24 C 300 46, 80 54, 16 38"/></svg>');
@@ -458,6 +473,7 @@ async function lesson() {
   [...$("chapters").children].forEach(el => el.className = "done");
 }
 
+if (AUTO) $("autonote").hidden = false;
 $("play").onclick = async () => {
   coverPip.bounce();
   await sleep(250);

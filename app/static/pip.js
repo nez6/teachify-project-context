@@ -72,7 +72,7 @@ export function mountPip(host) {
   requestAnimationFrame(frame);
 
   function blink() {
-    lids.forEach(l => l.animate([{ height: 0 }, { height: 52 }, { height: 0 }], { duration: 170 }));
+    lids.forEach(l => l.animate([{ height: "0px" }, { height: "52px" }, { height: "0px" }], { duration: 170 }));
     setTimeout(blink, 2200 + Math.random() * 3200);
   }
   setTimeout(blink, 1500);

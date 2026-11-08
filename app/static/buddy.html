@@ -39,6 +39,7 @@
       <button data-say="For 3(x+2)=2x+11 I wrote 3x+2=2x+11, then x+2=11, then x=9. Can you check it?">Check my work</button>
       <button data-say="What problems are on my sheet today?">What's on my sheet?</button>
       <button data-say="Teach me something fun about equations.">Teach me something fun</button>
+      <button data-say="Give me a practice problem and check my steps one at a time.">Practice with me</button>
       <button data-say="I'm really stuck. Can you get my teacher?">I'm stuck</button>
     </div>
   </section>
@@ -180,12 +181,13 @@ async function toggleLive() {
   $("liveLabel").textContent = "Connecting…";
   try {
     if (!vapi) {
-      const { default: Vapi } = await import("https://cdn.jsdelivr.net/npm/@vapi-ai/web@3.0.1/+esm");
+      const mod = await import("https://cdn.jsdelivr.net/npm/@vapi-ai/web@3.0.1/+esm");
+      const Vapi = mod.default && mod.default.default ? mod.default.default : mod.default;  // CJS build wraps it twice
       vapi = new Vapi(config.vapi_public_key);
       vapi.on("call-start", () => { inCall = true; $("live").classList.add("on"); $("liveLabel").textContent = "End call"; $("mic").disabled = true; pip.wave(); });
       vapi.on("call-end", () => { inCall = false; $("live").classList.remove("on"); $("liveLabel").textContent = "Live call"; $("mic").disabled = false; pip.talk(0); });
       vapi.on("volume-level", (v) => pip.talk(Math.min(1, v * 2.2)));
-      vapi.on("error", () => { say("The live line hiccuped. Hold the mic button instead."); });
+      vapi.on("error", (e) => { console.error("[pip] vapi", e); inCall = false; $("live").classList.remove("on"); $("liveLabel").textContent = "Live call"; $("mic").disabled = false; say("The live line needs your microphone. Allow it in the address bar, or hold the mic button."); });
       vapi.on("message", async (m) => {
         if (m.type === "transcript" && m.transcriptType === "final") {
           if (m.role === "user") heard(m.transcript); else say(m.transcript);
@@ -204,7 +206,7 @@ async function toggleLive() {
       });
     }
     await vapi.start(config.vapi_assistant_id);
-  } catch (e) { $("liveLabel").textContent = "Live call"; say("I couldn't start the live call. Hold the mic button instead."); }
+  } catch (e) { console.error("[pip] live call", e); $("liveLabel").textContent = "Live call"; say("I couldn't start the live call. Check the microphone permission, or hold the mic button instead."); }
 }
 $("live").onclick = toggleLive;
 
@@ -220,8 +222,18 @@ config = await (await fetch("/api/buddy/config")).json();
 if (config.phone) { $("phone").hidden = false; $("phoneLink").textContent = config.phone; $("phoneLink").href = "tel:" + config.phone.replace(/[^+\d]/g, ""); }
 if (!config.vapi_assistant_id) $("live").hidden = true;
 setTimeout(() => pip.wave(), 600);
-const first = new URLSearchParams(location.search).get("say");
-if (first) ask(first);
+const params = new URLSearchParams(location.search);
+if (params.get("say")) ask(params.get("say"));
+// Demo mode: Pip checks a sample, then the fix, so the notebook, hint and XP all show.
+if (params.has("demo")) (async () => {
+  const wait = (ms) => new Promise(r => setTimeout(r, ms));
+  const until = async () => { await wait(2000); while (busy || !audio.paused) await wait(400); };
+  await wait(1500);
+  $("typeBox").value = "";
+  ask("For 3(x+2)=2x+11 I wrote 3x+2=2x+11, then x+2=11, then x=9. Can you check it?"); await until(); await wait(2500);
+  ask("Oh! The 3 multiplies the 2 too. So 3x+6=2x+11, then x+6=11, then x=5. Is that right now?"); await until(); await wait(2500);
+  ask("Can you teach me something fun?");
+})();
 </script>
 </body>
 </html>
