@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teachify Live Demo</title>
+<link rel="stylesheet" href="/static/style.css">
+<style>
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  header { display: flex; align-items: baseline; gap: 14px; padding: 12px 18px; flex-wrap: wrap; }
+  header p { color: var(--muted); }
+  main {
+    flex: 1; display: grid; gap: 12px; padding: 0 12px 12px;
+    grid-template-columns: 340px minmax(0, 1fr) 340px;
+    grid-template-rows: minmax(0, 1fr);
+    height: calc(100vh - 56px); min-height: 620px;
+  }
+  section { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+  section h2 {
+    font: 600 12px/1 var(--sans); letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted); padding: 2px 4px 7px;
+  }
+  iframe { flex: 1; width: 100%; min-height: 0; border: 1.5px solid var(--ink); border-radius: 12px; background: var(--paper); }
+  @media (max-width: 1100px) {
+    main { display: flex; flex-direction: column; height: auto; }
+    iframe { height: 720px; flex: none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1 class="brand">Teach<i>ify</i></h1>
+  <p>Catch the exact line where a student goes off course.</p>
+  <a class="btn" href="/" style="margin-left:auto;text-decoration:none">Pip home</a>
+  <a class="btn" href="/pricing" style="text-decoration:none">Pricing</a>
+</header>
+<main>
+  <section><h2>1 · Student phone</h2><iframe title="Student app" src="/student?demo=1"></iframe></section>
+  <section><h2>2 · Teacher dashboard</h2><iframe title="Teacher dashboard" src="/teacher"></iframe></section>
+  <section><h2>3 · Desk node</h2><iframe title="Desk node" src="/node"></iframe></section>
+</main>
+</body>
+</html>

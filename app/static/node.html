@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teachify Desk Tripod</title>
+<link rel="stylesheet" href="/static/style.css">
+<style>
+  html, body { height: 100%; overflow: hidden; }
+  body { display: flex; flex-direction: column; }
+  #view { flex: 1; min-height: 0; position: relative; }
+  canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+  .info { padding: 10px 12px; background: var(--card); border-top: 1.5px solid var(--ink); }
+  .state { font-weight: 700; display: flex; align-items: center; gap: 7px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--ink); }
+  .sub { color: var(--muted); font-size: 12px; margin: 2px 0 8px; }
+  .acts { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .btn { padding: 5px 9px; font-size: 13px; }
+  .seg { display: inline-flex; border: 1.5px solid var(--ink); border-radius: 8px; overflow: hidden; }
+  .seg button { border: 0; border-radius: 0; background: var(--card); padding: 5px 9px; font-size: 13px; font-weight: 600; }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+  details { margin-top: 8px; font-size: 12px; }
+  summary { cursor: pointer; color: var(--muted); font-weight: 600; }
+  .files { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 6px; }
+  .files a { color: var(--ink); }
+  .err { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; padding: 20px; text-align: center; color: var(--muted); }
+</style>
+</head>
+<body>
+<div id="view"><div class="err" id="err">The 3D view could not start in this browser. The desk tripod still works.</div></div>
+<div class="info">
+  <div class="state"><span class="dot" id="dot"></span><span id="label">Ready</span></div>
+  <div class="sub" id="sub">Tap the mount or Send a photo. A real capture sends the same event.</div>
+  <div class="acts">
+    <div class="seg" role="group" aria-label="Mount">
+      <button id="mPhone" aria-pressed="true">Phone</button>
+      <button id="mCam" aria-pressed="false">Camera</button>
+    </div>
+    <button class="btn" id="press">Send a photo</button>
+    <button class="btn" id="explode" aria-pressed="false">Show parts</button>
+  </div>
+  <details>
+    <summary>Download printable parts (STL)</summary>
+    <div class="files">
+      <a href="/static/models/hub.stl" download>Hub</a>
+      <a href="/static/models/leg.stl" download>Leg (print 3)</a>
+      <a href="/static/models/column.stl" download>Column</a>
+      <a href="/static/models/collar.stl" download>Light collar</a>
+      <a href="/static/models/diffuser.stl" download>Light diffuser</a>
+      <a href="/static/models/yoke.stl" download>Hinge</a>
+      <a href="/static/models/head.stl" download>Head</a>
+      <a href="/static/models/phone_clamp.stl" download>Phone clamp</a>
+      <a href="/static/models/camera_cradle.stl" download>Camera cradle</a>
+    </div>
+  </details>
+</div>
+<script type="importmap">{"imports":{"three":"/static/vendor/three.module.js"}}</script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "/static/vendor/OrbitControls.js";
+import { STLLoader } from "/static/vendor/STLLoader.js";
+
+const DEVICE = "desk-07";
+const LED = {
+  idle: { color: 0x2a2f36, glow: 0, css: "#2a2f36", label: "Ready", sub: "Tap the mount or Send a photo. A real capture sends the same event." },
+  waiting: { color: 0xffa21f, glow: 3, css: "#ffa21f", label: "Waiting for teacher", sub: "The alert is on the teacher's dashboard." },
+  coming: { color: 0x2f7bff, glow: 3, css: "#2f7bff", label: "Teacher is on the way", sub: "The teacher tapped \"On my way\"." },
+  resolved: { color: 0x19c37d, glow: 3, css: "#19c37d", label: "Resolved", sub: "Returning to ready." },
+};
+const LEG_ANGLES = [180, 55, -55];
+const MODEL_VERSION = "tripod-2";
+const LIGHT_Y = 266;  // matches LIGHT_Z in build_model.py, plus half the collar  // bump after rerunning build_model.py so browsers skip cached STLs
+const $ = (id) => document.getElementById(id);
+const capture = () => fetch(`/api/device/${DEVICE}/press`, {
+  method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ source: "virtual" }),
+});
+
+let ledMaterial = null, lightGlow = null, target = LED.idle, pulse = 0, flash = 0;
+$("press").onclick = () => { flash = 1; capture(); };
+function applyLed(key) {
+  target = LED[key] || LED.idle;
+  $("dot").style.background = target.css;
+  $("label").textContent = target.label;
+  $("sub").textContent = target.sub;
+  if (ledMaterial) {
+    ledMaterial.emissive.setHex(target.color);
+    ledMaterial.color.setHex(target.glow ? target.color : 0xeeeae0);
+    lightGlow.color.setHex(target.color);
+  }
+}
+new EventSource("/api/stream").onmessage = (e) => applyLed(JSON.parse(e.data).devices[DEVICE].led);
+
+function startScene() {
+  const view = $("view");
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  view.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(36, 1, 1, 4000);
+  const viewDirection = new THREE.Vector3(0.78, 0.38, 0.5).normalize();
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; controls.autoRotate = true; controls.autoRotateSpeed = 0.7;
+  controls.target.set(20, 165, 0); controls.minDistance = 200; controls.maxDistance = 1800;
+  scene.add(new THREE.HemisphereLight(0xffffff, 0xcabf9f, 2.1));
+  const sun = new THREE.DirectionalLight(0xffffff, 2.2); sun.position.set(200, 500, 260); scene.add(sun);
+  lightGlow = new THREE.PointLight(0x000000, 0, 260); lightGlow.position.set(0, LIGHT_Y, 0); scene.add(lightGlow);
+
+  // Model units are millimetres with Z up; the group turns Z into the scene's Y.
+  const assembly = new THREE.Group();
+  assembly.rotation.x = -Math.PI / 2;
+  scene.add(assembly);
+  const paint = (color, extra) => new THREE.MeshStandardMaterial({ color, roughness: 0.55, metalness: 0.02, ...extra });
+  ledMaterial = paint(0xeeeae0, { emissive: 0x000000, emissiveIntensity: 1, roughness: 0.3 });
+  const mountMaterial = paint(0xc9321f, { roughness: 0.4, emissive: 0xffffff, emissiveIntensity: 0 });
+  const frame = paint(0x1b2430);
+  const parts = {
+    paper_ref: { material: paint(0xffffff, { roughness: 0.9 }), lift: 0 },
+    hub: { material: frame, lift: 0 },
+    leg: { material: frame, lift: 0, copies: LEG_ANGLES },
+    column: { material: frame, lift: 40 },
+    collar: { material: paint(0x2f4358), lift: 80 },
+    led_ring_ref: { material: paint(0x1d6b4a), lift: 92 },
+    diffuser: { material: ledMaterial, lift: 104 },
+    yoke: { material: paint(0x2f4358), lift: 126 },
+    head: { material: paint(0x2f4358), lift: 148 },
+    phone_clamp: { material: mountMaterial, lift: 170, mode: "phone" },
+    phone_ref: { material: paint(0x15181c, { roughness: 0.3 }), lift: 186, mode: "phone" },
+    camera_cradle: { material: mountMaterial, lift: 170, mode: "camera" },
+    board_ref: { material: paint(0x1f7a55), lift: 186, mode: "camera" },
+  };
+  const meshes = [];
+  let mode = "phone";
+  const loader = new STLLoader();
+  Object.entries(parts).forEach(([name, part]) => loader.load(`/static/models/${name}.stl?v=${MODEL_VERSION}`, (geometry) => {
+    geometry.computeVertexNormals();
+    for (const angle of part.copies || [0]) {
+      const mesh = new THREE.Mesh(geometry, part.material);
+      mesh.rotation.z = THREE.MathUtils.degToRad(angle);
+      mesh.userData = { lift: part.lift, mode: part.mode, name };
+      mesh.visible = !part.mode || part.mode === mode;
+      meshes.push(mesh); assembly.add(mesh);
+    }
+    if (name === "diffuser") applyLed(Object.keys(LED).find(k => LED[k] === target));
+  }));
+
+  function setMode(next) {
+    mode = next;
+    $("mPhone").setAttribute("aria-pressed", String(mode === "phone"));
+    $("mCam").setAttribute("aria-pressed", String(mode === "camera"));
+    for (const mesh of meshes) mesh.visible = !mesh.userData.mode || mesh.userData.mode === mode;
+  }
+  $("mPhone").onclick = () => setMode("phone");
+  $("mCam").onclick = () => setMode("camera");
+
+  const shadow = new THREE.Mesh(new THREE.CircleGeometry(175, 64), new THREE.MeshBasicMaterial({ color: 0x1b2430, transparent: true, opacity: 0.1 }));
+  shadow.rotation.x = -Math.PI / 2; shadow.position.y = -0.5; scene.add(shadow);
+
+  let exploded = 0, explodedTarget = 0;
+  $("explode").onclick = (e) => {
+    explodedTarget = explodedTarget ? 0 : 1;
+    e.target.setAttribute("aria-pressed", String(!!explodedTarget));
+    e.target.textContent = explodedTarget ? "Assemble" : "Show parts";
+    controls.target.set(20, explodedTarget ? 250 : 165, 0);
+    frameCamera();
+  };
+
+  const ray = new THREE.Raycaster(), pointer = new THREE.Vector2();
+  let down = null;
+  renderer.domElement.addEventListener("pointerdown", (e) => { down = [e.clientX, e.clientY]; controls.autoRotate = false; });
+  renderer.domElement.addEventListener("pointerup", (e) => {
+    if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return;
+    const box = renderer.domElement.getBoundingClientRect();
+    pointer.set(((e.clientX - box.left) / box.width) * 2 - 1, -((e.clientY - box.top) / box.height) * 2 + 1);
+    ray.setFromCamera(pointer, camera);
+    const mounts = meshes.filter(m => m.visible && m.userData.mode);
+    if (ray.intersectObjects(mounts).length) { flash = 1; capture(); }
+  });
+
+  // Keeps the whole tripod in view at any panel width, assembled or exploded.
+  function frameCamera() {
+    const halfWidth = 175, halfHeight = explodedTarget ? 280 : 185;
+    const tanV = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    // Extra margin: the nearest leg points toward the camera.
+    const distance = Math.max(halfHeight / tanV, halfWidth / (tanV * camera.aspect)) * 1.55;
+    camera.position.copy(controls.target).addScaledVector(viewDirection, distance);
+  }
+  function resize() {
+    const w = view.clientWidth, h = view.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / Math.max(h, 1);
+    camera.updateProjectionMatrix();
+    frameCamera();
+  }
+  new ResizeObserver(resize).observe(view); resize();
+
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduced) controls.autoRotate = false;
+  function tick(t) {
+    exploded += (explodedTarget - exploded) * 0.09;
+    flash *= 0.88;
+    for (const mesh of meshes) mesh.position.z = mesh.userData.lift * exploded;
+    lightGlow.position.y = LIGHT_Y + 104 * exploded;
+    mountMaterial.emissiveIntensity = flash * 0.8;
+    pulse = target.glow ? (reduced ? 0.8 : 0.65 + 0.35 * Math.sin(t / 260)) : 0;
+    ledMaterial.emissiveIntensity = pulse * 0.45;
+    lightGlow.intensity = pulse * 2600;
+    controls.update();
+    renderer.render(scene, camera);
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+try { startScene(); } catch (e) { $("err").style.display = "flex"; console.error(e); }
+</script>
+</body>
+</html>

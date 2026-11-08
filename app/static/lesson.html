@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Magic Seesaw · Teachify</title>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/buddy.css">
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<style>
+  body.lesson { min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+  .top { display: flex; align-items: center; gap: 14px; padding: 12px clamp(16px, 3vw, 32px); flex-wrap: wrap; }
+  .top .brand { text-decoration: none; color: var(--ink); font-size: 26px; }
+  .chapters { display: flex; gap: 6px; margin-left: auto; align-items: center; }
+  .chapters span { height: 10px; width: 34px; border-radius: 99px; border: 2px solid var(--ink); background: var(--card); transition: background .3s; }
+  .chapters span.done { background: var(--go); }
+  .chapters span.now { background: var(--high); }
+  .clock { font: 800 15px var(--mono); min-width: 92px; text-align: right; }
+  .iconbtn { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 0; }
+
+  .scene { flex: 1; display: grid; grid-template-rows: auto auto auto; justify-items: center; padding: 0 clamp(12px, 3vw, 32px) 24px; }
+  .chapter-name { font: 800 clamp(22px, 3vw, 34px)/1.1 var(--display); margin: 4px 0 0; text-align: center; min-height: 1.2em; }
+  #world { width: min(980px, 100%); height: auto; max-height: max(260px, calc(100vh - 330px)); overflow: visible; }
+  #plank { transform-box: view-box; transform-origin: 450px 336px; transition: transform .9s cubic-bezier(.34, 1.56, .64, 1); }
+  .sun { transform-box: fill-box; transform-origin: center; animation: spin 40s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .cloud { animation: drift 26s ease-in-out infinite alternate; }
+  @keyframes drift { to { transform: translateX(60px); } }
+  .item { transition: transform .45s cubic-bezier(.34, 1.4, .64, 1); }
+  .math { min-height: 64px; display: flex; gap: 14px; align-items: center; justify-content: center; flex-wrap: wrap; font: 700 clamp(24px, 3.4vw, 40px)/1.2 var(--mono); }
+  .math .eq { background: var(--card); border: 2.5px solid var(--ink); border-radius: 16px; padding: 6px 18px; box-shadow: 0 4px 0 var(--ink); animation: eq-in .5s cubic-bezier(.3, 1.5, .5, 1) both; }
+  .math .eq b { color: var(--amber); }
+  .math .op { font: 800 18px var(--sans); color: var(--go); animation: eq-in .4s both; }
+  @keyframes eq-in { from { opacity: 0; transform: translateY(14px) scale(.9); } }
+
+  body.compact #world { max-height: 30vh; }
+  #world { transition: max-height .6s ease; }
+  .dock { position: sticky; bottom: 0; padding-top: 8px; background: linear-gradient(transparent, var(--paper) 30%); z-index: 3; display: flex; align-items: flex-end; gap: 14px; width: min(980px, 100%); margin-top: 8px; }
+  .dock .mini { width: clamp(96px, 13vw, 140px); flex: none; }
+  .caption { flex: 1; background: var(--card); border: 2.5px solid var(--ink); border-radius: 22px 22px 22px 6px; padding: 14px 18px; font: 700 clamp(17px, 2vw, 21px)/1.4 var(--display); box-shadow: 0 5px 0 var(--ink); min-height: 72px; margin-bottom: 24px; }
+  .choices { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 4px; min-height: 8px; }
+  .choice { border: 3px solid var(--ink); background: var(--card); color: var(--ink); font: 800 clamp(17px, 2vw, 20px)/1.2 var(--display); padding: 14px 22px; border-radius: 18px; box-shadow: 0 6px 0 var(--ink); min-height: 56px; animation: eq-in .4s cubic-bezier(.3, 1.5, .5, 1) both; }
+  .choice:hover { background: var(--high); }
+  .choice:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--ink); }
+  .choice.num { min-width: 76px; font-size: 30px; }
+  .choice.say { background: var(--tomato); display: inline-flex; gap: 8px; align-items: center; }
+  .choice.say.on { background: var(--high); }
+  .choice.wrong { animation: shake .4s; }
+  @keyframes shake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+
+  .paper { width: min(520px, 100%); background: #fffdf8; border: 2.5px solid var(--ink); border-radius: 6px; padding: 18px 22px 18px 54px; box-shadow: 6px 6px 0 var(--ink); position: relative; background-image: linear-gradient(transparent 47px, #cfe0f5 48px); background-size: 100% 48px; transform: rotate(-1.2deg); animation: eq-in .5s both; }
+  .paper::before { content: ""; position: absolute; left: 38px; top: 0; bottom: 0; width: 2px; background: #f1a493; }
+  .paper .who { font: 800 14px var(--sans); color: var(--muted); }
+  .paper button { position: relative; display: block; width: 100%; text-align: left; border: 0; background: transparent; font: 600 30px/48px "Gochi Hand", var(--mono); color: #2a3a8a; padding: 0 6px; border-radius: 8px; min-height: 48px; }
+  .paper button:hover { background: rgba(255, 197, 61, .3); }
+  .paper svg.ring { position: absolute; left: -10px; top: 0; width: calc(100% + 20px); height: 52px; overflow: visible; pointer-events: none; }
+  .paper svg.ring path { fill: none; stroke: var(--pen); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 600; stroke-dashoffset: 600; animation: draw .8s ease-out forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+
+  .cover { position: fixed; inset: 0; background: var(--paper); background-image: radial-gradient(var(--grid) 1.4px, transparent 1.5px); background-size: 22px 22px; display: grid; place-items: center; z-index: 20; padding: 16px; }
+  .cover .card { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 28px; align-items: center; max-width: 900px; }
+  .cover h1 { font: 800 clamp(44px, 7vw, 84px)/.95 var(--display); letter-spacing: -.02em; }
+  .cover h1 span { color: var(--pen); }
+  .cover p { font-size: 19px; margin: 14px 0 22px; max-width: 30ch; }
+  .cover ul { list-style: none; padding: 0; margin: 0 0 24px; display: grid; gap: 6px; font-weight: 800; }
+  .cover li { display: flex; gap: 8px; align-items: center; }
+  .play { display: inline-flex; gap: 10px; align-items: center; border: 3px solid var(--ink); background: var(--tomato); color: var(--ink); font: 800 24px var(--display); padding: 16px 32px; border-radius: 999px; box-shadow: 0 7px 0 var(--ink); min-height: 64px; }
+  .play:active { transform: translateY(6px); box-shadow: 0 1px 0 var(--ink); }
+  .badge { width: min(220px, 56vw); animation: badge-in 1s cubic-bezier(.3, 1.6, .5, 1) both; }
+  @keyframes badge-in { from { transform: scale(.2) rotate(-200deg); opacity: 0; } }
+  .end-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .end-actions a, .end-actions button { text-decoration: none; }
+  @media (max-width: 700px) {
+    .cover .card { grid-template-columns: 1fr; text-align: center; }
+    .cover .card > div:last-child { order: -1; width: 160px; margin: 0 auto; }
+    .cover p { margin-left: auto; margin-right: auto; }
+    .cover ul { justify-items: center; }
+    .chapters span { width: 18px; }
+    .caption { margin-bottom: 12px; }
+  }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gochi+Hand&display=swap">
+</head>
+<body class="lesson">
+<div class="cover" id="cover">
+  <div class="card">
+    <div>
+      <h1>The Magic <span>Seesaw</span></h1>
+      <p>Pip has a mystery box full of apples. Use a magic seesaw to find out how many are inside.</p>
+      <ul>
+        <li><i data-lucide="clock-4"></i>About 5 minutes</li>
+        <li><i data-lucide="volume-2"></i>Turn your sound on</li>
+        <li><i data-lucide="sparkles"></i>Ages 7 to 12, no math needed to start</li>
+      </ul>
+      <button class="play" id="play"><i data-lucide="play"></i>Start the mystery</button>
+    </div>
+    <div id="coverPip"></div>
+  </div>
+</div>
+
+<header class="top">
+  <a class="brand" href="/">Teach<i>ify</i></a>
+  <div class="chapters" id="chapters" aria-label="Lesson progress"></div>
+  <span class="clock" id="clock">0:00</span>
+  <button class="btn iconbtn" id="pause" aria-label="Pause"><i data-lucide="pause"></i></button>
+</header>
+
+<main class="scene">
+  <h2 class="chapter-name" id="chapterName"></h2>
+  <svg id="world" viewBox="0 0 900 470" role="img" aria-label="A seesaw with apples and mystery boxes">
+    <circle class="sun" cx="800" cy="70" r="34" fill="#ffc53d" stroke="#20243a" stroke-width="4" stroke-dasharray="10 7"/>
+    <g class="cloud"><path d="M90 92 q10-30 40-22 q14-24 44-8 q30-6 30 22 q12 14-6 22 h-104 q-22-4-4-14z" fill="#fffdf8" stroke="#20243a" stroke-width="3.5"/></g>
+    <path d="M20 440 Q 220 430 450 438 T 880 436" fill="none" stroke="#20243a" stroke-width="4" stroke-linecap="round"/>
+    <path d="M60 452 h40 M300 450 h70 M620 452 h30 M760 450 h60" stroke="#20243a" stroke-width="3" stroke-linecap="round" opacity=".35"/>
+    <g id="plank">
+      <rect x="100" y="336" width="700" height="18" rx="9" fill="#c98b4a" stroke="#20243a" stroke-width="4"/>
+      <path d="M140 345 h40 M300 344 h60 M560 345 h50 M700 344 h40" stroke="#20243a" stroke-width="2.5" stroke-linecap="round" opacity=".4"/>
+      <rect x="130" y="318" width="200" height="20" rx="6" fill="#fffdf8" stroke="#20243a" stroke-width="4"/>
+      <rect x="570" y="318" width="200" height="20" rx="6" fill="#fffdf8" stroke="#20243a" stroke-width="4"/>
+      <g id="left"></g><g id="right"></g>
+    </g>
+    <path d="M450 350 L398 438 L502 438 Z" fill="#ff6847" stroke="#20243a" stroke-width="4" stroke-linejoin="round"/>
+    <circle cx="450" cy="352" r="9" fill="#20243a"/>
+    <g id="level" opacity="0"><rect x="404" y="226" width="92" height="30" rx="15" fill="#d9f4e8" stroke="#13805f" stroke-width="3"/><text x="450" y="247" text-anchor="middle" font-family="Nunito" font-weight="800" font-size="16" fill="#0b5c43">BALANCED</text></g>
+  </svg>
+  <div class="math" id="math" aria-live="polite"></div>
+  <div class="choices" id="choices"></div>
+  <div class="dock">
+    <div class="mini" id="pip"></div>
+    <div class="caption" id="caption" aria-live="polite"></div>
+  </div>
+</main>
+
+<script type="module">
+import { mountPip, speakWith } from "/static/pip.js";
+lucide.createIcons();
+const $ = (id) => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+const pip = mountPip($("pip")), coverPip = mountPip($("coverPip"));
+const LINES = (await (await fetch("/static/lesson/lines.json")).json()).lines;
+const CHAPTERS = ["Meet the seesaw", "The mystery box", "Write it in math", "Your turn", "Spot the slip", "Your badge"];
+$("chapters").innerHTML = CHAPTERS.map(c => `<span title="${c}"></span>`).join("");
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+// ---------- Narration ----------
+const voice = new Audio(); speakWith(pip, voice);
+let paused = false, started = 0, pausedAt = 0, pausedTotal = 0;
+const FAST = new URLSearchParams(location.search).has("fast");  // QA: skips narration
+async function line(name) {
+  const text = LINES[name];
+  $("caption").textContent = text;
+  if (FAST) { await sleep(60); return; }
+  $("caption").animate([{ transform: "scale(.97)" }, { transform: "none" }], { duration: 220, easing: "ease-out" });
+  try {
+    voice.src = `/static/lesson/audio/${name}.mp3`;
+    await voice.play();
+    await new Promise((done) => { voice.onended = done; voice.onerror = done; });
+  } catch (e) {
+    await sleep(Math.max(1800, text.split(" ").length * 330));
+  }
+  while (paused) await sleep(200);
+  await sleep(250);
+}
+$("pause").onclick = () => {
+  paused = !paused;
+  if (paused) { voice.pause(); pausedAt = Date.now(); } else { voice.play().catch(() => {}); pausedTotal += Date.now() - pausedAt; }
+  $("pause").innerHTML = `<i data-lucide="${paused ? "play" : "pause"}"></i>`;
+  $("pause").setAttribute("aria-label", paused ? "Resume" : "Pause");
+  lucide.createIcons();
+};
+setInterval(() => {
+  if (!started || paused) return;
+  const s = Math.floor((Date.now() - started - pausedTotal) / 1000);
+  $("clock").textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")} / 5:00`;
+}, 500);
+function chapter(i) {
+  [...$("chapters").children].forEach((el, j) => el.className = j < i ? "done" : j === i ? "now" : "");
+  $("chapterName").textContent = CHAPTERS[i];
+  $("chapterName").animate([{ opacity: 0, transform: "translateY(-10px)" }, { opacity: 1, transform: "none" }], { duration: 400, easing: "ease-out" });
+}
+
+// ---------- The seesaw ----------
+const sides = { left: [], right: [] };
+const CENTER = { left: 230, right: 670 };
+function weight(side) { return sides[side].reduce((t, it) => t + it.w, 0); }
+function makeApple() {
+  const g = document.createElementNS(NS, "g");
+  g.innerHTML = `<path d="M0 -22 c 14 -10 28 2 24 20 c -3 16 -14 24 -24 20 c -10 4 -21 -4 -24 -20 c -4 -18 10 -30 24 -20z" fill="#e8432a" stroke="#20243a" stroke-width="3.5"/>
+    <path d="M0 -22 q 2 -10 6 -14" stroke="#20243a" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <path d="M6 -30 q 12 -8 18 2 q -10 6 -18 -2z" fill="#3fae6b" stroke="#20243a" stroke-width="2.5"/>
+    <ellipse cx="-9" cy="-10" rx="4" ry="7" fill="#fff" opacity=".55"/>`;
+  return { el: g, w: 1, kind: "apple", h: 46 };
+}
+function makeBox(value, label = "?") {
+  const g = document.createElementNS(NS, "g");
+  g.innerHTML = `<g class="lid"><rect x="-30" y="-62" width="60" height="14" rx="4" fill="#ffd66e" stroke="#20243a" stroke-width="3.5"/></g>
+    <rect x="-27" y="-50" width="54" height="50" rx="6" fill="#ffc53d" stroke="#20243a" stroke-width="3.5"/>
+    <text class="lbl" x="0" y="-15" text-anchor="middle" font-family="Baloo 2" font-weight="800" font-size="32" fill="#20243a">${label}</text>`;
+  return { el: g, w: value, kind: "box", h: 64 };
+}
+function slot(side, i) {
+  const items = sides[side], perRow = 4;
+  const row = Math.floor(i / perRow), col = i % perRow, inRow = Math.min(perRow, items.length - row * perRow);
+  const x = CENTER[side] + (col - (inRow - 1) / 2) * 48;
+  const y = 318 - row * 50;
+  return [x, y];
+}
+function layout(side) { sides[side].forEach((it, i) => { const [x, y] = slot(side, i); it.el.setAttribute("transform", `translate(${x} ${y})`); }); }
+function tilt(forceDeg) {
+  const diff = weight("right") - weight("left");
+  const deg = forceDeg ?? Math.max(-13, Math.min(13, diff * 4.5));
+  $("plank").style.transform = `rotate(${deg}deg)`;
+  $("level").animate([{ opacity: +$("level").getAttribute("opacity") }, { opacity: deg === 0 && (weight("left") + weight("right")) > 0 ? 1 : 0 }], { duration: 400, fill: "forwards" });
+  $("level").setAttribute("opacity", deg === 0 && (weight("left") + weight("right")) > 0 ? 1 : 0);
+  if (deg !== 0) pip.look(deg > 0 ? 1 : -1, .4);
+}
+async function add(side, item, { stagger = 0 } = {}) {
+  sides[side].push(item);
+  $(side).append(item.el);
+  layout(side);
+  if (!reduce) item.el.animate([{ translate: "0 -360px", opacity: 0 }, { translate: "0 0", opacity: 1, offset: .7 }, { translate: "0 -14px" }, { translate: "0 0" }],
+    { duration: 700, delay: stagger, easing: "cubic-bezier(.5,0,.5,1)", fill: "backwards" });
+  await sleep(stagger + 450);
+}
+async function addMany(side, n, maker) { for (let i = 0; i < n; i++) await add(side, maker(), { stagger: 0 }); }
+async function remove(side, kind, n) {
+  const gone = [];
+  for (let i = sides[side].length - 1; i >= 0 && gone.length < n; i--) if (sides[side][i].kind === kind) gone.push(...sides[side].splice(i, 1));
+  await Promise.all(gone.map((it, k) => {
+    const a = it.el.animate([{ translate: "0 0", opacity: 1 }, { translate: `${side === "left" ? -120 : 120}px -260px`, opacity: 0, rotate: "40deg" }],
+      { duration: reduce ? 1 : 650, delay: k * 120, easing: "cubic-bezier(.4,0,.6,1)", fill: "forwards" });
+    return a.finished.then(() => it.el.remove());
+  }));
+  layout(side);
+}
+async function clear() { await remove("left", "apple", 99); await remove("left", "box", 99); await remove("right", "apple", 99); await remove("right", "box", 99); tilt(0); }
+
+// ---------- Choices, voice answers, math ----------
+const canListen = !!(navigator.mediaDevices && window.MediaRecorder);
+const WORDS = { one: 1, won: 1, two: 2, to: 2, too: 2, three: 3, tree: 3, four: 4, for: 4, five: 5, six: 6, seven: 7 };
+// Every question can be answered by tapping or by talking. Speech goes to Deepgram, then we match it to a button.
+function choose(options) {
+  return new Promise((resolve) => {
+    $("choices").innerHTML = "";
+    const all = canListen ? [...options, { html: '<i data-lucide="mic"></i>Say it', cls: "say", voice: true }] : options;
+    all.forEach((o, i) => {
+      const b = document.createElement("button");
+      b.className = "choice" + (o.cls ? " " + o.cls : ""); b.style.animationDelay = i * 90 + "ms";
+      b.innerHTML = o.html || o.label;
+      b.onclick = () => o.voice ? listen(b, options, resolve) : resolve(o.value);
+      $("choices").append(b);
+    });
+    lucide.createIcons();
+    pip.look(0, 1);
+  });
+}
+function clearChoices() { $("choices").innerHTML = ""; }
+function match(text, options) {
+  const t = text.toLowerCase(), words = t.split(/\W+/);
+  const digit = t.match(/\d+/), n = digit ? +digit[0] : words.map(w => WORDS[w]).find(Boolean);
+  if (options.length === 1 && t.trim()) return options[0].value;
+  for (const o of options) if (typeof o.value === "number" && n === o.value) return o.value;
+  for (const o of options) if ((o.words || []).some(w => t.includes(w))) return o.value;
+  if (n != null && options.some(o => typeof o.value === "number")) return n;
+  return undefined;
+}
+function listen(btn, options, resolve) {
+  if (btn.classList.contains("on")) return;
+  navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+    const rec = new MediaRecorder(stream), chunks = [];
+    rec.ondataavailable = (e) => chunks.push(e.data);
+    rec.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      btn.classList.remove("on"); btn.innerHTML = '<i data-lucide="mic"></i>Say it'; lucide.createIcons();
+      const blob = new Blob(chunks, { type: rec.mimeType || "audio/webm" });
+      try {
+        const r = await fetch("/api/stt", { method: "POST", headers: { "Content-Type": blob.type.split(";")[0] }, body: blob });
+        const text = r.ok ? (await r.json()).text : "";
+        const v = match(text || "", options);
+        if (v !== undefined) { $("caption").textContent = `I heard: “${text}”`; pip.bounce(); await sleep(700); resolve(v); }
+        else $("caption").textContent = text ? `I heard “${text}”. Can you tap one of the buttons?` : "I didn't catch that. Try again, or tap a button!";
+      } catch (e) { $("caption").textContent = "I couldn't hear that. Tap a button instead!"; }
+    };
+    voice.pause(); rec.start(); btn.classList.add("on"); btn.textContent = "Listening…";
+    setTimeout(() => rec.state === "recording" && rec.stop(), 3500);
+  }).catch(() => { $("caption").textContent = "No microphone? No problem, just tap a button!"; });
+}
+function math(parts) {
+  $("math").innerHTML = parts.map((p, i) => p.op ? `<span class="op" style="animation-delay:${i * 250}ms">${p.op}</span>` : `<span class="eq" style="animation-delay:${i * 250}ms">${p.eq}</span>`).join("");
+}
+
+function burst(x, y) {
+  for (let i = 0; i < 22; i++) {
+    const s = document.createElement("span"); s.className = "spark";
+    s.style.left = x + "px"; s.style.top = y + "px";
+    s.style.background = ["#ffc53d", "#13805f", "#ff6847", "#2e63c9"][i % 4];
+    s.style.borderRadius = i % 3 ? "3px" : "50%";
+    document.body.append(s);
+    const a = Math.random() * Math.PI * 2, d = 120 + Math.random() * 160;
+    s.animate([{ transform: "translate(0,0) rotate(0)", opacity: 1 }, { transform: `translate(${Math.cos(a) * d}px,${Math.sin(a) * d + 80}px) rotate(${Math.random() * 500}deg)`, opacity: 0 }],
+      { duration: 1200 + Math.random() * 500, easing: "cubic-bezier(.2,.8,.3,1)" }).onfinish = () => s.remove();
+  }
+}
+function centerOf(el) { const r = el.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2 + scrollY]; }
+
+// ---------- The lesson ----------
+async function lesson() {
+  chapter(0); pip.wave();
+  await line("hello");
+  await line("ready");
+  await choose([{ label: "I'm ready!", value: 1, words: ["ready", "yes", "yeah", "go"] }]); clearChoices();
+  pip.bounce(); await line("ready_yes");
+  await Promise.all([addMany("left", 3, makeApple), addMany("right", 3, makeApple)]);
+  tilt();
+  await line("rule1");
+  await line("rule2");
+  await line("predict");
+  const side = await choose([{ label: "Left side goes down", value: "left", words: ["left"] }, { label: "Right side goes down", value: "right", words: ["right", "write"] }]);
+  clearChoices();
+  await line(side === "right" ? "predict_right" : "predict_left");
+  await add("right", makeApple()); tilt(); pip.bounce();
+  await line("rule3");
+  await remove("right", "apple", 1); tilt();
+  await line("rule4");
+
+  chapter(1); await clear(); await sleep(300);
+  await add("left", makeBox(3)); await addMany("left", 2, makeApple); await addMany("right", 5, makeApple); tilt();
+  await line("mystery1");
+  await line("mystery2");
+  await line("guess");
+  await choose([1, 2, 3, 4, 5].map(n => ({ label: String(n), value: n, cls: "num" }))); clearChoices();
+  await line("guess_any");
+  await line("trick");
+  for (;;) {
+    const pick = await choose([{ label: "Take 2 apples off the left only", value: "one" }, { label: "Take 2 apples off both sides", value: "both" }]);
+    clearChoices();
+    if (pick === "both") break;
+    await remove("left", "apple", 2); tilt(); pip.think(true);
+    await line("oops1"); pip.think(false);
+    await addMany("left", 2, makeApple); tilt();
+  }
+  await Promise.all([remove("left", "apple", 2), remove("right", "apple", 2)]); tilt(); pip.bounce();
+  await line("yes1");
+  await line("solved1");
+  const box = sides.left[0].el;
+  box.querySelector(".lid").animate([{ transform: "none" }, { transform: "translate(-24px,-40px) rotate(-40deg)" }], { duration: 500, fill: "forwards", easing: "cubic-bezier(.3,1.6,.5,1)" });
+  box.querySelector(".lbl").textContent = "3";
+  for (let i = 0; i < 3; i++) {
+    const a = makeApple().el; a.classList.add("inner"); a.setAttribute("transform", "scale(.6)"); box.append(a);
+    a.animate([{ translate: "0 -10px", opacity: 0 }, { translate: `${(i - 1) * 34}px -110px`, opacity: 1 }], { duration: 600, delay: i * 160, fill: "forwards", easing: "cubic-bezier(.3,1.5,.5,1)" });
+  }
+  burst(...centerOf(box));
+  await line("reveal");
+
+  chapter(2);
+  box.querySelector(".lbl").textContent = "x";
+  box.querySelectorAll(".inner").forEach(a => a.remove());
+  box.querySelector(".lid").getAnimations().forEach(a => a.cancel());
+  await addMany("left", 2, makeApple); await addMany("right", 2, makeApple); tilt();
+  math([{ eq: "<b>x</b> + 2 = 5" }]);
+  await line("algebra1");
+  await line("xmeans");
+  const xm = await choose([
+    { label: "The mystery box", value: "box", words: ["box", "mystery", "number", "hid"] },
+    { label: "A times sign", value: "times", words: ["times", "multipl"] },
+    { label: "A kiss", value: "kiss", words: ["kiss"] },
+  ]);
+  clearChoices();
+  await line(xm === "box" ? "x_yes" : "x_no");
+  math([{ eq: "<b>x</b> + 2 = 5" }, { op: "take 2 from both sides" }, { eq: "<b>x</b> = 3" }]);
+  await Promise.all([remove("left", "apple", 2), remove("right", "apple", 2)]); tilt();
+  await line("algebra2");
+
+  chapter(3); math([]); await clear(); await sleep(300);
+  await add("left", makeBox(3, "x")); await add("left", makeBox(3, "x")); await add("left", makeApple());
+  await addMany("right", 7, makeApple); tilt();
+  math([{ eq: "2<b>x</b> + 1 = 7" }]);
+  await line("turn1");
+  for (;;) {
+    const pick = await choose([
+      { label: "Take 1 apple off both sides", value: "both" },
+      { label: "Take 1 apple off the left only", value: "left" },
+      { label: "Take 7 apples off the right", value: "right" },
+    ]);
+    clearChoices();
+    if (pick === "both") break;
+    if (pick === "left") { await remove("left", "apple", 1); tilt(); await line("oops2"); await add("left", makeApple()); }
+    else { await remove("right", "apple", 7); tilt(); await line("oops2"); await addMany("right", 7, makeApple); }
+    tilt();
+  }
+  await Promise.all([remove("left", "apple", 1), remove("right", "apple", 1)]); tilt(); pip.bounce();
+  math([{ eq: "2<b>x</b> + 1 = 7" }, { op: "take 1 from both sides" }, { eq: "2<b>x</b> = 6" }]);
+  await line("yes2");
+  await line("turn2");
+  for (;;) {
+    const n = await choose([2, 3, 4].map(n => ({ label: String(n), value: n, cls: "num" })));
+    clearChoices();
+    if (n === 3) break;
+    sides.left.forEach(it => { if (it.kind === "box") { it.w = n; it.el.querySelector(".lbl").textContent = n; } });
+    tilt();
+    if (n === 4) await line("try4"); else if (n === 2) await line("try2");
+    else { $("caption").textContent = `Let's test ${n}. Two boxes of ${n} make ${2 * n}, not 6. It tips! Try again.`; await sleep(3200); }
+    sides.left.forEach(it => { if (it.kind === "box") { it.w = 3; it.el.querySelector(".lbl").textContent = "x"; } });
+    tilt();
+  }
+  sides.left.forEach(it => { if (it.kind === "box") { it.w = 3; it.el.querySelector(".lbl").textContent = "3"; } });
+  tilt(); pip.bounce(); burst(...centerOf($("left")));
+  math([{ eq: "2<b>x</b> = 6" }, { op: "split into 2 equal groups" }, { eq: "<b>x</b> = 3" }]);
+  await line("yes3");
+
+  chapter(4); math([]); await clear(); document.body.classList.add("compact");
+  $("math").innerHTML = `<div class="paper"><div class="who">Sam's homework</div>
+    <button data-i="0">2x + 1 = 7</button><button data-i="1">2x = 8</button><button data-i="2">x = 4</button></div>`;
+  await line("spot1");
+  for (;;) {
+    const i = await new Promise((resolve) => $("math").querySelectorAll(".paper button").forEach(b => b.onclick = () => resolve(+b.dataset.i)));
+    const btn = $("math").querySelector(`[data-i="${i}"]`);
+    if (i === 1) {
+      btn.insertAdjacentHTML("beforeend", '<svg class="ring" viewBox="0 0 300 52" preserveAspectRatio="none"><path d="M12 28 C 40 2, 260 0, 290 24 C 300 46, 80 54, 16 38"/></svg>');
+      pip.bounce(); burst(...centerOf(btn));
+      break;
+    }
+    btn.animate([{ transform: "translateX(-6px)" }, { transform: "translateX(6px)" }, { transform: "none" }], { duration: 300 });
+    await line(i === 0 ? "spot_no_top" : "spot_no_after");
+  }
+  await line("spot_yes");
+  await line("quiz");
+  const q = await choose([
+    { label: "Do the same thing to both sides", value: "both", words: ["both", "same"] },
+    { label: "Only change one side", value: "one", words: ["one side", "only"] },
+    { label: "Add apples to the heavy side", value: "heavy", words: ["heavy", "add"] },
+  ]);
+  clearChoices();
+  if (q === "both") pip.bounce();
+  await line(q === "both" ? "quiz_yes" : "quiz_no");
+
+  chapter(5);
+  $("math").innerHTML = `<svg class="badge" viewBox="0 0 240 240" role="img" aria-label="Seesaw Detective badge">
+    <path d="M70 150 L52 232 L88 212 L104 238 L118 160Z M170 150 L188 232 L152 212 L136 238 L122 160Z" fill="#2e63c9" stroke="#20243a" stroke-width="4" stroke-linejoin="round"/>
+    <circle cx="120" cy="104" r="92" fill="#ffc53d" stroke="#20243a" stroke-width="5"/>
+    <circle cx="120" cy="104" r="74" fill="#fffdf8" stroke="#20243a" stroke-width="4" stroke-dasharray="6 6"/>
+    <rect x="62" y="104" width="116" height="10" rx="5" fill="#c98b4a" stroke="#20243a" stroke-width="3.5"/>
+    <path d="M120 114 L104 140 L136 140Z" fill="#ff6847" stroke="#20243a" stroke-width="3.5" stroke-linejoin="round"/>
+    <rect x="72" y="80" width="22" height="22" rx="3" fill="#ffc53d" stroke="#20243a" stroke-width="3.5"/>
+    <circle cx="157" cy="91" r="11" fill="#e8432a" stroke="#20243a" stroke-width="3.5"/>
+    <text x="120" y="62" text-anchor="middle" font-family="Baloo 2" font-weight="800" font-size="17" fill="#20243a">SEESAW</text>
+    <text x="120" y="168" text-anchor="middle" font-family="Baloo 2" font-weight="800" font-size="17" fill="#20243a">DETECTIVE</text></svg>`;
+  setTimeout(() => burst(...centerOf($("math"))), 500);
+  setTimeout(() => burst(...centerOf($("math"))), 1100);
+  pip.wave();
+  await line("end1");
+  clearChoices();
+  $("choices").innerHTML = `<div class="end-actions"><a class="choice" href="/buddy"><i data-lucide="mic"></i> Talk to Pip</a><button class="choice" id="again"><i data-lucide="rotate-ccw"></i> Play again</button></div>`;
+  lucide.createIcons();
+  $("again").onclick = () => location.reload();
+  await line("end2");
+  [...$("chapters").children].forEach(el => el.className = "done");
+}
+
+$("play").onclick = async () => {
+  coverPip.bounce();
+  await sleep(250);
+  $("cover").animate([{ opacity: 1 }, { opacity: 0, transform: "scale(1.04)" }], { duration: 350, fill: "forwards" }).onfinish = () => $("cover").remove();
+  started = Date.now();
+  lesson();
+};
+</script>
+</body>
+</html>

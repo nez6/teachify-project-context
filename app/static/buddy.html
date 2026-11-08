@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Talk to Pip · Teachify</title>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/buddy.css">
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+</head>
+<body class="buddy">
+<header class="bar">
+  <a class="brand" href="/">Teach<i>ify</i></a>
+  <nav>
+    <a href="/lesson">Seesaw lesson</a>
+    <a href="/classroom">Classroom</a>
+    <a href="/teacher">Teacher</a>
+    <a href="/pricing">Pricing</a>
+  </nav>
+</header>
+
+<main class="talk">
+  <section class="stage" aria-label="Pip">
+    <div class="bubble" id="bubble" aria-live="polite">Hi! I'm Pip. Tell me your steps and I'll find the exact line that slipped. I'll never just give you the answer.</div>
+    <div class="pipwrap"><div id="pip"></div></div>
+    <p class="you" id="you" aria-live="polite"></p>
+
+    <div class="controls">
+      <button class="mic" id="mic" aria-label="Hold to talk to Pip">
+        <i data-lucide="mic"></i><span id="micLabel">Hold to talk</span>
+      </button>
+      <button class="btn live" id="live"><i data-lucide="phone"></i><span id="liveLabel">Live call</span></button>
+    </div>
+    <form class="type" id="typeForm">
+      <input id="typeBox" autocomplete="off" placeholder="Or type to Pip, like: I wrote 3x+2=2x+11" aria-label="Message Pip">
+      <button class="btn primary" aria-label="Send"><i data-lucide="send"></i></button>
+    </form>
+    <div class="chips" id="chips">
+      <button data-say="For 3(x+2)=2x+11 I wrote 3x+2=2x+11, then x+2=11, then x=9. Can you check it?">Check my work</button>
+      <button data-say="What problems are on my sheet today?">What's on my sheet?</button>
+      <button data-say="Teach me something fun about equations.">Teach me something fun</button>
+      <button data-say="I'm really stuck. Can you get my teacher?">I'm stuck</button>
+    </div>
+  </section>
+
+  <aside class="notebook" aria-label="Pip's notebook">
+    <div class="nb-head"><h2>Pip's notebook</h2><span class="xp" id="xp">0 XP</span></div>
+    <div id="nb" class="nb-body">
+      <p class="nb-empty">When you tell Pip your steps, they show up here with the slip circled.</p>
+    </div>
+    <div class="hand" id="hand" hidden><i data-lucide="hand"></i><span id="handText">Your teacher can see your raised hand.</span></div>
+    <div class="phone" id="phone" hidden>
+      <i data-lucide="phone-call"></i>
+      <div><strong>Call Pip from any phone</strong><a id="phoneLink" href="#"></a></div>
+    </div>
+    <a class="lesson-card" href="/lesson">
+      <svg viewBox="0 0 120 60" aria-hidden="true"><rect x="10" y="44" width="100" height="6" rx="3" fill="#20243a" transform="rotate(-6 60 47)"/><path d="M52 58 L60 44 L68 58Z" fill="#ffc53d" stroke="#20243a" stroke-width="3" stroke-linejoin="round"/><rect x="18" y="26" width="16" height="16" rx="3" fill="#ff6847" stroke="#20243a" stroke-width="3" transform="rotate(-6 60 47)"/><circle cx="92" cy="30" r="7" fill="#13805f" stroke="#20243a" stroke-width="3"/></svg>
+      <div><strong>The Magic Seesaw</strong><span>5 minute lesson. Crack the mystery box.</span></div>
+    </a>
+  </aside>
+</main>
+
+<script type="module">
+import { mountPip, speakWith } from "/static/pip.js";
+lucide.createIcons();
+const $ = (id) => document.getElementById(id);
+const pip = mountPip($("pip"));
+const audio = new Audio(); audio.crossOrigin = "anonymous";
+speakWith(pip, audio);
+let history = [], config = {}, busy = false, vapi = null, inCall = false;
+
+const esc = (s) => { const d = document.createElement("div"); d.textContent = s ?? ""; return d.innerHTML; };
+function say(text) { $("bubble").textContent = text; $("bubble").classList.remove("pop"); void $("bubble").offsetWidth; $("bubble").classList.add("pop"); }
+function heard(text) { $("you").textContent = text ? `You: “${text}”` : ""; }
+
+function renderWork(a) {
+  const rows = (a.rows || []).map((r, i) =>
+    `<div class="row ${r.status}" style="--i:${i}"><span class="n">${i + 1}</span><span class="t">${esc(r.text)}</span>${r.status === "error" ? '<svg class="circle" viewBox="0 0 200 50" preserveAspectRatio="none"><path d="M10 26 C 30 2, 170 0, 190 22 C 200 40, 60 52, 14 36"/></svg>' : ""}</div>`).join("");
+  let foot = "";
+  if (a.verdict === "error") foot = `<div class="hint"><i data-lucide="lightbulb"></i><span>Line ${a.first_error + 1}: ${esc(a.nudge || "Check this step.")}</span></div>`;
+  if (a.verdict === "correct") foot = `<div class="yay"><i data-lucide="star"></i><span>${a.reward && a.reward.comeback ? "Comeback! You fixed your own slip." : "All correct!"} ${a.reward ? "+" + a.reward.points + " XP" : ""}</span></div>`;
+  if (a.verdict === "in_progress") foot = `<div class="hint calm"><i data-lucide="footprints"></i><span>Every step holds up so far. Keep going.</span></div>`;
+  $("nb").innerHTML = `<p class="nb-problem">${esc(a.problem || "")}</p><div class="rows">${rows}</div>${foot}`;
+  lucide.createIcons();
+  if (a.reward) { pip.bounce(); burst(); }
+}
+
+function burst() {
+  const box = $("pip").getBoundingClientRect();
+  for (let i = 0; i < 14; i++) {
+    const s = document.createElement("span"); s.className = "spark";
+    s.style.left = box.left + box.width / 2 + "px"; s.style.top = box.top + box.height / 3 + scrollY + "px";
+    s.style.background = ["#ffc53d", "#13805f", "#ff6847", "#2e63c9"][i % 4];
+    document.body.append(s);
+    const a = (i / 14) * Math.PI * 2, d = 90 + Math.random() * 70;
+    s.animate([{ transform: "translate(0,0) scale(1)", opacity: 1 }, { transform: `translate(${Math.cos(a) * d}px,${Math.sin(a) * d}px) scale(.3)`, opacity: 0 }],
+      { duration: 900, easing: "cubic-bezier(.2,.8,.3,1)" }).onfinish = () => s.remove();
+  }
+}
+
+function doActions(actions) {
+  for (const act of actions || []) {
+    if (act.type === "work") renderWork(act);
+    if (act.type === "teacher") { $("hand").hidden = false; pip.wave(); }
+    if (act.type === "lesson") {
+      $("nb").innerHTML = `<a class="go-lesson" href="/lesson"><i data-lucide="play"></i> Opening the Magic Seesaw…</a>`;
+      lucide.createIcons();
+      setTimeout(() => { if (!inCall) location.href = "/lesson"; }, 4200);
+    }
+    if (act.type === "problems") {
+      $("nb").innerHTML = `<p class="nb-problem">Today's sheet</p><ol class="sheet">${act.items.map(p => `<li><span>${esc(p.course)}</span>${esc(p.problem)}</li>`).join("")}</ol>`;
+    }
+  }
+}
+
+async function speak(text) {
+  if (!config.voice || !text) return;
+  try {
+    const r = await fetch("/api/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: text.slice(0, 600) }) });
+    if (!r.ok) return;
+    audio.src = URL.createObjectURL(await r.blob());
+    await audio.play();
+  } catch (e) { /* The bubble still shows the words. */ }
+}
+
+async function ask(text) {
+  if (!text.trim() || busy) return;
+  if (inCall && vapi) { vapi.send({ type: "add-message", message: { role: "user", content: text } }); heard(text); return; }
+  busy = true; heard(text); pip.think(true); say("Hmm, let me look…");
+  history.push({ role: "user", content: text });
+  try {
+    const r = await fetch("/api/buddy/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: history.slice(-16) }) });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || r.status);
+    history.push({ role: "assistant", content: data.reply });
+    pip.think(false); say(data.reply); doActions(data.actions); speak(data.reply);
+  } catch (e) {
+    pip.think(false); say(String(e.message || "I couldn't hear the server. Try again?"));
+    history.pop();
+  } finally { busy = false; }
+}
+
+// Hold to talk: record, Deepgram writes it down, Pip answers.
+let rec = null, chunks = [];
+async function startRec() {
+  if (inCall) return;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    chunks = [];
+    rec = new MediaRecorder(stream);
+    rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+    rec.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      const blob = new Blob(chunks, { type: rec.mimeType || "audio/webm" });
+      $("mic").classList.remove("on"); $("micLabel").textContent = "Hold to talk";
+      if (blob.size < 2000) { say("I didn't catch that. Hold the button while you talk."); return; }
+      say("Listening back…");
+      const r = await fetch("/api/stt", { method: "POST", headers: { "Content-Type": blob.type.split(";")[0] }, body: blob });
+      const data = r.ok ? await r.json() : { text: "" };
+      if (data.text) ask(data.text); else say("Hmm, I couldn't hear words. Try again a little louder?");
+    };
+    rec.start();
+    $("mic").classList.add("on"); $("micLabel").textContent = "Listening… let go to send";
+    audio.pause(); pip.talk(0);
+  } catch (e) { say("I need the microphone to hear you. You can also type to me below."); }
+}
+function stopRec() { if (rec && rec.state === "recording") rec.stop(); }
+$("mic").addEventListener("pointerdown", (e) => { e.preventDefault(); startRec(); });
+["pointerup", "pointerleave", "pointercancel"].forEach(ev => $("mic").addEventListener(ev, stopRec));
+$("mic").addEventListener("keydown", (e) => { if ((e.key === " " || e.key === "Enter") && !e.repeat) { e.preventDefault(); startRec(); } });
+$("mic").addEventListener("keyup", (e) => { if (e.key === " " || e.key === "Enter") stopRec(); });
+
+$("typeForm").onsubmit = (e) => { e.preventDefault(); const t = $("typeBox").value; $("typeBox").value = ""; ask(t); };
+$("chips").onclick = (e) => { const b = e.target.closest("button"); if (b) ask(b.dataset.say); };
+
+// Live call: Vapi runs the whole conversation hands-free. Pip's tools hit this server.
+async function toggleLive() {
+  if (!config.vapi_public_key || !config.vapi_assistant_id) { say("Live calls aren't switched on here yet. Hold the mic button instead."); return; }
+  if (inCall) { vapi && vapi.stop(); return; }
+  $("liveLabel").textContent = "Connecting…";
+  try {
+    if (!vapi) {
+      const { default: Vapi } = await import("https://cdn.jsdelivr.net/npm/@vapi-ai/web@3.0.1/+esm");
+      vapi = new Vapi(config.vapi_public_key);
+      vapi.on("call-start", () => { inCall = true; $("live").classList.add("on"); $("liveLabel").textContent = "End call"; $("mic").disabled = true; pip.wave(); });
+      vapi.on("call-end", () => { inCall = false; $("live").classList.remove("on"); $("liveLabel").textContent = "Live call"; $("mic").disabled = false; pip.talk(0); });
+      vapi.on("volume-level", (v) => pip.talk(Math.min(1, v * 2.2)));
+      vapi.on("error", () => { say("The live line hiccuped. Hold the mic button instead."); });
+      vapi.on("message", async (m) => {
+        if (m.type === "transcript" && m.transcriptType === "final") {
+          if (m.role === "user") heard(m.transcript); else say(m.transcript);
+        }
+        if (m.type === "tool-calls") {
+          for (const c of m.toolCallList || m.toolCalls || []) {
+            const fn = c.function || {}, name = c.name || fn.name;
+            let args = c.arguments || fn.arguments || {};
+            if (typeof args === "string") { try { args = JSON.parse(args); } catch { args = {}; } }
+            if (name === "check_work") {
+              const r = await fetch("/api/buddy/peek", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ problem_id: args.problem_id || "dist", lines: args.lines || [] }) });
+              if (r.ok) renderWork(await r.json());
+            } else doActions([{ type: { call_teacher: "teacher", open_lesson: "lesson" }[name] }]);
+          }
+        }
+      });
+    }
+    await vapi.start(config.vapi_assistant_id);
+  } catch (e) { $("liveLabel").textContent = "Live call"; say("I couldn't start the live call. Hold the mic button instead."); }
+}
+$("live").onclick = toggleLive;
+
+new EventSource("/api/stream").onmessage = (e) => {
+  const s = JSON.parse(e.data), me = s.students.find(x => x.id === "12"), led = s.devices["desk-07"].led;
+  $("xp").textContent = `${me.xp} XP`;
+  if (led === "coming") { $("hand").hidden = false; $("handText").textContent = "Your teacher is on the way!"; }
+  else if (led === "waiting") { $("hand").hidden = false; $("handText").textContent = "Your teacher can see your raised hand."; }
+  else $("hand").hidden = true;
+};
+
+config = await (await fetch("/api/buddy/config")).json();
+if (config.phone) { $("phone").hidden = false; $("phoneLink").textContent = config.phone; $("phoneLink").href = "tel:" + config.phone.replace(/[^+\d]/g, ""); }
+if (!config.vapi_assistant_id) $("live").hidden = true;
+setTimeout(() => pip.wave(), 600);
+const first = new URLSearchParams(location.search).get("say");
+if (first) ask(first);
+</script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+@import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap");
+:root {
+  color-scheme: light;
+  --paper: #fff4e2;
+  --card: #fffdf8;
+  --ink: #20243a;
+  --muted: #5b6075;
+  --line: #ecd9b8;
+  --grid: #f0dcbb;
+  --pen: #d8452b;
+  --pen-soft: #ffe3da;
+  --high: #ffc53d;
+  --go: #13805f;
+  --go-soft: #d9f4e8;
+  --blue: #2e63c9;
+  --blue-soft: #e1eafc;
+  --amber: #b46400;
+  --tomato: #ff6847;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --sans: "Nunito", ui-rounded, system-ui, sans-serif;
+  --serif: "Baloo 2", "Nunito", ui-rounded, sans-serif;
+  --display: "Baloo 2", "Nunito", ui-rounded, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  background-color: var(--paper);
+  background-image: radial-gradient(var(--grid) 1.4px, transparent 1.5px);
+  background-size: 22px 22px;
+  color: var(--ink);
+  font: 600 15px/1.5 var(--sans);
+}
+button { font: inherit; cursor: pointer; }
+button:focus-visible, textarea:focus-visible, a:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+h1, h2, h3, p { margin: 0; }
+.brand { font: 800 24px/1 var(--display); letter-spacing: -0.01em; }
+.brand i { color: var(--pen); font-style: normal; }
+.btn {
+  border: 2px solid var(--ink); background: var(--card); color: var(--ink);
+  border-radius: 14px; padding: 8px 14px; font-weight: 800;
+  box-shadow: 0 3px 0 var(--ink); transition: transform .12s ease, box-shadow .12s ease;
+}
+.btn:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
+.btn:hover { background: var(--high); }
+.btn.primary { background: var(--ink); color: #fff; }
+.btn.primary:hover { background: #343a5c; }
+.btn.quiet { border-color: var(--line); font-weight: 500; color: var(--muted); }
+.btn.quiet:hover { background: var(--card); color: var(--ink); border-color: var(--ink); }
+.work { font: 15px/1.5 var(--mono); }
+.work div { padding: 2px 8px; border-radius: 4px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.work .n { color: var(--muted); display: inline-block; width: 1.6em; user-select: none; }
+.work .error {
+  color: var(--pen); font-weight: 700;
+  text-decoration: underline wavy var(--pen) 1.5px; text-underline-offset: 4px;
+  background: var(--pen-soft);
+}
+.work .after_error, .work .unread { color: var(--muted); }
+.work .ok::after { content: " ✓"; color: var(--go); }
+.work .unread::after { content: "  (couldn't read)"; font: italic 12px var(--sans); }

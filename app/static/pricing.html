@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teachify Pricing</title>
+<link rel="stylesheet" href="/static/style.css">
+<style>
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 20px 16px 64px; }
+  nav { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; margin-bottom: 40px; }
+  nav a { color: var(--muted); text-decoration: none; font-weight: 600; }
+  nav a:hover, nav a[aria-current] { color: var(--ink); }
+  nav .brand { color: var(--ink); margin-right: auto; }
+  .hero h1 { font: 700 clamp(34px, 5vw, 54px)/1.08 var(--serif); max-width: 820px; }
+  .hero p { font-size: 18px; color: var(--muted); max-width: 680px; margin-top: 14px; }
+  h2 { font: 700 28px/1.15 var(--serif); margin: 56px 0 6px; }
+  .sub { color: var(--muted); margin-bottom: 20px; }
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .plan {
+    background: var(--card); border: 1.5px solid var(--line); border-radius: 14px;
+    padding: 22px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .plan.pick { border-color: var(--ink); box-shadow: 4px 4px 0 var(--ink); }
+  .tag { font: 700 12px/1 var(--sans); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .plan h3 { font: 700 24px/1.1 var(--serif); }
+  .price { font: 700 40px/1 var(--serif); }
+  .price small { font: 500 15px var(--sans); color: var(--muted); }
+  .plan ul { margin: 6px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+  .badge { align-self: flex-start; background: var(--high); border-radius: 999px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
+  .band {
+    margin-top: 16px; background: var(--ink); color: #f7f4ea; border-radius: 14px;
+    padding: 18px 22px; display: flex; gap: 12px 28px; flex-wrap: wrap; align-items: baseline;
+  }
+  .band b { color: var(--high); }
+  .proof { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  .stat { background: var(--card); border: 1.5px solid var(--line); border-radius: 14px; padding: 20px; }
+  .stat .num { font: 700 46px/1 var(--serif); }
+  .stat.win { background: var(--go); color: #fff; border-color: var(--go); }
+  .stat p { margin-top: 8px; }
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1.5px solid var(--line); border-radius: 14px; overflow: hidden; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--ink); color: #f7f4ea; font-weight: 600; }
+  .tablewrap { overflow-x: auto; }
+  td.y { color: var(--go); font-weight: 700; }
+  td.n { color: var(--muted); }
+  dl { display: grid; gap: 14px; }
+  dt { font-weight: 700; }
+  dd { margin: 4px 0 0; color: var(--muted); }
+  .cta { margin-top: 48px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .cta a { text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="/">Teach<i>ify</i></a>
+    <a href="/">Live demo</a>
+    <a href="/teacher">Teacher dashboard</a>
+    <a href="/pricing" aria-current="page">Pricing</a>
+  </nav>
+
+  <section class="hero">
+    <h1>A tutor at every desk.</h1>
+    <p>Teachify reads handwritten math and finds the exact line where a student went wrong. Families pay monthly. Schools pay per student per year.</p>
+  </section>
+
+  <h2>At home</h2>
+  <p class="sub">For students doing homework on their own, like Prince at 11:40 pm.</p>
+  <div class="grid">
+    <article class="plan">
+      <span class="tag">Personal Tutor</span>
+      <h3>Free</h3>
+      <p class="price">$0</p>
+      <ul>
+        <li>3 photo checks a day</li>
+        <li>Finds the first wrong line</li>
+        <li>A hint, never the answer</li>
+      </ul>
+    </article>
+    <article class="plan pick">
+      <span class="badge">Most families</span>
+      <span class="tag">Personal Tutor</span>
+      <h3>Plus</h3>
+      <p class="price">$9.99 <small>per month, or $79 a year</small></p>
+      <ul>
+        <li>Unlimited photo checks</li>
+        <li>Step-by-step hints for every misconception</li>
+        <li>Progress report for parents</li>
+        <li>Algebra 1 through Calculus</li>
+      </ul>
+    </article>
+  </div>
+
+  <h2>In school</h2>
+  <p class="sub">Priced per student per year. Most schools ban phones in class, so a desk camera reads the work.</p>
+  <div class="grid">
+    <article class="plan">
+      <span class="tag">Enterprise A</span>
+      <h3>Detect</h3>
+      <p class="price">$8 <small>per student / year</small></p>
+      <ul>
+        <li>Desk camera reads work on paper</li>
+        <li>A light turns on when a step is wrong</li>
+        <li>Live teacher dashboard and class-wide alerts</li>
+      </ul>
+    </article>
+    <article class="plan">
+      <span class="tag">Enterprise B</span>
+      <h3>Assist</h3>
+      <p class="price">$15 <small>per student / year</small></p>
+      <ul>
+        <li>Everything in Detect</li>
+        <li>AI helper talks the student through the fix over headphones</li>
+        <li>Teacher sees what the helper said</li>
+      </ul>
+    </article>
+    <article class="plan">
+      <span class="tag">Enterprise C</span>
+      <h3>Quiet mode</h3>
+      <p class="price">$12 <small>per student / year</small></p>
+      <ul>
+        <li>Everything in Detect</li>
+        <li>Grades assignments automatically</li>
+        <li>Sends each flagged line back for the student to fix</li>
+      </ul>
+    </article>
+    <article class="plan pick">
+      <span class="badge">Best value</span>
+      <span class="tag">Enterprise A + B + C</span>
+      <h3>Full classroom</h3>
+      <p class="price">$20 <small>per student / year</small></p>
+      <ul>
+        <li>All three modes</li>
+        <li>School reports through Entrinsik Informer</li>
+        <li>Priority support and teacher training</li>
+      </ul>
+    </article>
+  </div>
+  <div class="band">
+    <span><b>Desk camera kit:</b> $49 per desk, or included free with Full classroom for 3-year contracts</span>
+    <span><b>Pilot:</b> first semester free for up to 5 classrooms</span>
+    <span><b>Example:</b> 1,000 math students on Full classroom = $20,000 a year</span>
+  </div>
+
+  <h2>Compare plans</h2>
+  <p class="sub">Every plan covers Algebra 1 and 2, Pre-Calc, and Calculus.</p>
+  <div class="tablewrap">
+  <table>
+    <tr><th>Feature</th><th>Personal Tutor</th><th>A · Detect</th><th>B · Assist</th><th>C · Quiet</th></tr>
+    <tr><td>Finds the exact wrong line</td><td class="y">Yes</td><td class="y">Yes</td><td class="y">Yes</td><td class="y">Yes</td></tr>
+    <tr><td>Hints, not answers</td><td class="y">Yes</td><td class="y">Yes</td><td class="y">Yes</td><td class="y">Yes</td></tr>
+    <tr><td>Reads from</td><td>Phone photo</td><td>Desk camera</td><td>Desk camera</td><td>Desk camera or uploaded scans</td></tr>
+    <tr><td>Desk light alert</td><td class="n">—</td><td class="y">Yes</td><td class="y">Yes</td><td class="n">—</td></tr>
+    <tr><td>Voice helper over headphones</td><td class="n">—</td><td class="n">—</td><td class="y">Yes</td><td class="n">—</td></tr>
+    <tr><td>Automatic grading</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="y">Yes</td></tr>
+    <tr><td>Teacher dashboard</td><td class="n">—</td><td class="y">Yes</td><td class="y">Yes</td><td class="y">Yes</td></tr>
+  </table>
+  </div>
+
+  <h2>Why you can trust it</h2>
+  <p class="sub">Exact-match reading accuracy on 1,000 held-out handwritten math lines.</p>
+  <div class="proof">
+    <div class="stat"><div class="num">52%</div><p>Base model, Qwen3.5-4B (95% CI 48.9–55.1)</p></div>
+    <div class="stat win"><div class="num">76.5%</div><p>Our fine-tuned reader, trained on Tinker with 20,016 handwritten lines (95% CI 73.8–79.0)</p></div>
+    <div class="stat"><div class="num">2</div><p>Checks before a hint is given: AI judges the step, then SymPy re-checks the algebra.</p></div>
+  </div>
+  <p class="sub" style="margin-top:14px">These results are for the fine-tuned reader, which was tested on the same dataset's conventions it was trained on. The live app currently reads pages with Gemini.</p>
+
+  <h2>Details</h2>
+  <dl>
+    <div><dt>Who sees student work?</dt><dd>The student and their teacher. To read the work, a photo of the page is sent to the AI model, so students should leave their names off the area in view.</dd></div>
+    <div><dt>Do teachers stay in charge?</dt><dd>Yes. Teachers see every flag and decide what happens next.</dd></div>
+    <div><dt>What's in the desk camera kit?</dt><dd>A 3D-printed desk tripod that holds a small Wi-Fi camera, or a phone, about 30 cm above the student's paper, plus a status light the teacher can see. It connects to the school's Wi-Fi and sends photos to Teachify on Google Cloud.</dd></div>
+    <div><dt>What do schools need before a pilot?</dt><dd>Student logins and a privacy review under FERPA and COPPA, which we complete with each district.</dd></div>
+    <div><dt>Is there district pricing?</dt><dd>Yes. Districts buying for several schools get volume pricing.</dd></div>
+  </dl>
+
+  <div class="cta">
+    <a class="btn primary" href="/">See the live demo</a>
+    <a class="btn" href="/teacher">Open the teacher dashboard</a>
+  </div>
+</div>
+</body>
+</html>

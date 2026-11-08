@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How it's built · Teachify</title>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/buddy.css">
+<style>
+  .doc { max-width: 980px; margin: 0 auto; padding: 20px clamp(16px, 4vw, 40px) 60px; }
+  .doc h1 { font: 800 clamp(38px, 5.4vw, 64px)/1 var(--display); letter-spacing: -.02em; }
+  .doc h2 { font: 800 30px/1.1 var(--display); margin: 44px 0 12px; }
+  .doc p, .doc li { font-size: 17px; max-width: 68ch; }
+  .doc p { margin: 10px 0; }
+  .doc a { color: var(--ink); font-weight: 800; }
+  .lead { font-size: 20px !important; }
+  figure { margin: 18px 0; background: var(--card); border: 2.5px solid var(--ink); border-radius: 20px; padding: 16px; box-shadow: 5px 5px 0 var(--ink); }
+  figure svg { width: 100%; height: auto; }
+  figcaption { color: var(--muted); font-size: 14px; margin-top: 8px; }
+  table { border-collapse: collapse; width: 100%; background: var(--card); border: 2.5px solid var(--ink); border-radius: 14px; overflow: hidden; font-size: 15px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1.5px solid var(--line); vertical-align: top; }
+  th { background: var(--ink); color: var(--paper); font-family: var(--display); font-size: 17px; }
+  .wrap { overflow-x: auto; }
+</style>
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="/">Teach<i>ify</i></a>
+  <nav><a href="/buddy">Talk to Pip</a><a href="/lesson">Seesaw lesson</a><a href="/classroom">Classroom</a><a href="/about" aria-current="page">How it's built</a></nav>
+</header>
+<main class="doc">
+  <h1>How this Teachify is built</h1>
+  <p class="lead">Teachify finds the first line where a student's math goes wrong and gives a hint instead of the answer. This build keeps every original part and adds Pip: a buddy you can talk to, who does things for you.</p>
+  <p>Original project: <a href="https://nez6.github.io/teachify-project-context/">project page</a> and <a href="https://github.com/nez6/teachify-project-context">repository</a>. This version lives on the <code>buddy</code> branch.</p>
+
+  <h2>The flow</h2>
+  <figure>
+    <svg viewBox="0 0 900 330" role="img" aria-label="Flow: a kid talks, types or snaps a photo; Pip uses Claude with tools; the SymPy detector decides; the teacher dashboard and desk light update">
+      <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#20243a"/></marker></defs>
+      <g font-family="Nunito" font-weight="800" font-size="15" fill="#20243a">
+        <rect x="10" y="20" width="170" height="80" rx="14" fill="#ff6847" stroke="#20243a" stroke-width="3"/><text x="95" y="55" text-anchor="middle">Kid talks, types</text><text x="95" y="75" text-anchor="middle">or snaps a photo</text>
+        <rect x="10" y="230" width="170" height="80" rx="14" fill="#fffdf8" stroke="#20243a" stroke-width="3"/><text x="95" y="265" text-anchor="middle">Any phone calls</text><text x="95" y="285" text-anchor="middle">Pip's number</text>
+        <rect x="250" y="20" width="170" height="80" rx="14" fill="#fffdf8" stroke="#20243a" stroke-width="3"/><text x="335" y="55" text-anchor="middle">Deepgram</text><text x="335" y="75" text-anchor="middle">speech ↔ text</text>
+        <rect x="250" y="230" width="170" height="80" rx="14" fill="#fffdf8" stroke="#20243a" stroke-width="3"/><text x="335" y="265" text-anchor="middle">Vapi</text><text x="335" y="285" text-anchor="middle">live voice calls</text>
+        <rect x="490" y="115" width="180" height="100" rx="14" fill="#ffc53d" stroke="#20243a" stroke-width="3"/><text x="580" y="150" text-anchor="middle">Pip = Claude</text><text x="580" y="170" text-anchor="middle">with 4 tools</text><text x="580" y="192" text-anchor="middle" font-size="13" font-weight="700">check · list · teacher · lesson</text>
+        <rect x="730" y="20" width="160" height="80" rx="14" fill="#d9f4e8" stroke="#13805f" stroke-width="3"/><text x="810" y="55" text-anchor="middle">SymPy detector</text><text x="810" y="75" text-anchor="middle">decides the math</text>
+        <rect x="730" y="230" width="160" height="80" rx="14" fill="#e1eafc" stroke="#2e63c9" stroke-width="3"/><text x="810" y="265" text-anchor="middle">Teacher dashboard</text><text x="810" y="285" text-anchor="middle">+ desk light</text>
+      </g>
+      <g stroke="#20243a" stroke-width="3" fill="none" marker-end="url(#ar)">
+        <path d="M180 60 H246"/><path d="M180 270 H246"/>
+        <path d="M420 60 C 470 60, 470 140, 488 145"/><path d="M420 270 C 470 270, 470 190, 488 185"/>
+        <path d="M670 140 C 700 120, 700 70, 726 64"/><path d="M670 190 C 700 210, 700 260, 726 266"/>
+      </g>
+      <g font-family="Nunito" font-size="12" font-weight="700" fill="#5b6075">
+        <text x="190" y="50">voice clip</text><text x="190" y="260">call audio</text><text x="430" y="95">words</text><text x="430" y="240">tool calls</text><text x="676" y="96">check_work</text><text x="676" y="240">call_teacher</text>
+      </g>
+    </svg>
+    <figcaption>Claude talks and picks the tool, but only SymPy decides right or wrong, so Pip can't invent a math verdict.</figcaption>
+  </figure>
+
+  <h2>What's original, what's new</h2>
+  <div class="wrap"><table>
+    <tr><th>Part</th><th>Original Teachify</th><th>This build</th></tr>
+    <tr><td>Error detection</td><td>SymPy finds the first invalid line</td><td>Same engine, untouched</td></tr>
+    <tr><td>Reading photos</td><td>Gemini on Vertex AI</td><td>Claude first, Gemini as a fallback</td></tr>
+    <tr><td>Teacher brief</td><td>Thinking Machines, then Gemini</td><td>Claude first, then the same chain</td></tr>
+    <tr><td>Student, teacher, desk node, pricing</td><td>Yes</td><td>All kept, restyled warmer</td></tr>
+    <tr><td>Talking buddy</td><td>No</td><td>Pip: hold to talk, type, or live call</td></tr>
+    <tr><td>Phone line</td><td>No</td><td>Call Pip from any phone (Vapi)</td></tr>
+    <tr><td>Kids lesson</td><td>No</td><td>5 minute animated Magic Seesaw</td></tr>
+  </table></div>
+
+  <h2>Keys and safety</h2>
+  <p>Every API key lives only in the hosting platform's environment. None is in the repository. The browser sees only Vapi's public key, which is designed to be public. Pip's tools call the same checker as the student app, and the hint rules (never the answer) are in both the prompt and the tool result.</p>
+  <p>Like the original, this is a demo: class state is in memory, names are synthetic, and a real school pilot still needs logins, a database, and a FERPA and COPPA review.</p>
+</main>
+</body>
+</html>
